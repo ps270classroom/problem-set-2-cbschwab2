@@ -1,6 +1,6 @@
 ---
 title: "Problem Set 2: Data Wrangling"
-author: Your Name Here
+author: Casey Schwab 
 output: pdf_document
 ---
 
@@ -30,33 +30,12 @@ Political advertising has traditionally been focused on the medium of television
 | `ad_tone_promote`  | proportion of FB ads that mention candidate only                     |
 | `ad_tone_contrast` | proportion of FB ads that mention candidate and candidate's opponent |
 
-
-
-
-\newpage
-
-## Question 1 (8 points)
-
-Load the data using the `read_csv` function and save it as `fb_ads` (using this will automatically make `fb_ads` a tibble). In the text, describe how many candidates there are in the dataset. 
-
-Use `dplyr` functions to create a table with the number of candidates in each type of incumbency status in the data set. Save this table output as `incumbency_table` (for the autograder). Use the function `knitr::kable()` on this table to have a nicely formatted table produced in the knitted output. 
-
- **Rubric**: 2pt for loading the data (autograder); 1pt for describing the number of candidates (PDF); 3pts for creating the table (autograder); 2pt for using `kable()` to nicely format the output (PDF)
-
-## Answer 1
-
-
-
-\newpage
-
-## Question 2 (7 points)
-
-Filter the data to just US House and US Senate races and use this to create a tibble called `party_incumbent_promote` that has 6 rows that summarizes the average of `ad_tone_promote` for each combination of `party` and `incumbency`. Call the variable summarizing the promote variable as `promote_prop` and be sure to remove any missing values when computing the averages. 
-
-Use `knitr::kable()` to produce a nicely formatted table. In this call, set the `digits` arguments to 3 and use the `col.names` argument to pass a nicer set of names. You can use the following as a template:
-
-```{r eval = FALSE}
-knitr::kable(my_table, col.names = c("Variable 1", "Variable 2", ...))
+```{r}
+library(dplyr)
+library(readr)
+library(knitr)
+fb_ads <- 
+  list.files("Users/Desktop/PS270/problem_set_2/data/fb_ads.csv")
 ```
 
 In the writeup, describe which type of candidate sponsored the most promoting ads on average. 
@@ -64,8 +43,31 @@ In the writeup, describe which type of candidate sponsored the most promoting ad
  **Rubric**: 3pts for creating `party_incumbent_promote` correctly (autograder); 2pt for a nicely formatted table (PDF); 1pt for changing the column names of the output table (PDF); 1pt for correctly identifying the type of candidate with highest average (PDF)
 
 ## Answer 2
+```{r}
+library(dplyr)
+
+party_incumbent_promote <- filtration |>
+  group_by(party, incumbency) |>
+  summarize(promote_prop = mean(ad_tone_promote, na.rm = TRUE)) |>
+  ungroup()
+party_incumbent_promote
+
+filtration <- fb_ads |>
+  filter(office %in% c("US House", "US Senate"))
+filtration
 
 
+knitr::kable(party_incumbent_promote
+             , col.names = c("Party", "Incumbency Status", "Promote Proportion"), 
+             digits = 3)
+
+
+highest_promo_rate <- party_incumbent_promote |>
+  filter(promote_prop == max(promote_prop))
+highest_promo_rate
+
+print(highest_promo_rate)
+```
 
 \newpage
 
@@ -79,8 +81,10 @@ Create a histogram of this variable for just the US House races. Save the ggplot
  **Rubric:** 2pt for creating the new variable (autograder); 3pts for creating the histogram object (autograder); 2pts for answering the question about the histogram (PDF)
 
 ## Answer 3
+```{r}
 
-
+fb_ads <- mutate(impressions_millions = impressions * 1000000)
+```
 
 \newpage
 
@@ -102,7 +106,23 @@ You do not need to exactly match the labels, but you should have informative lab
  **Rubric:** 3pts for correct axes (autograder); 3pts for correct data fed into `ggplot` (autograder); 3pts for the correct ordering of the y-axis (PDF); 3pts for fill being mapped to `party` (autograder); 1pt for plot being in knitted output and having informative labels (PDF)
 
 ## Answer 4
+```{r}
+library(ggplot2)
 
+data <- data.frame(
+  category = c("King", "O'Connor", "McCarthy", "McGrath", "Rouda", "Brindisi", "Harder", "Ocasio-Cortez", "Slotkin", "Kim", "Sinema", "Rosen", "Kennedy", "McSally", "Janz"),
+  Spending = c(13, 13, 14, 14, 15, 15, 15, 16, 17, 21, 22, 22, 23, 27, 33))
+
+fb_top_plot <- ggplot(data, aes(x = fb_ads, y = cand_name_last)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Top 15 House Candidates Facebook Ad Impressions, 2017-2018", 
+       x = "Facebook Ad Impressions (in millions", 
+       y = "Candidate") +
+      fill = "blue", "red"+
+  theme_minimal()
+
+print(fb_top_plot)
+```
 
 
 \newpage
